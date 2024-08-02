@@ -1,5 +1,6 @@
-from settings import EVALUATED_MODEL_INSTRUCT, EVALUATING_METAMODEL_PROMPT
-from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
+from model_tools import load_pipe, load_model
+from settings import EVALUATING_METAMODEL_PROMPT
+from transformers import AutoTokenizer
 from prompts import (get_prompt_template_v1, get_prompt_template_v2, get_prompt_template_v3, get_prompt_template_v4,
                      get_prompt_template_v5, get_prompt_template_v6)
 import time
@@ -12,7 +13,6 @@ BATCH_SIZE = 1
 
 
 def generate_evaluating_metamodel_prompt(model_response, reference_explanation, reference_sentiment, reference_idioms):
-    # Funkcja do sprawdzania i zamiany pustych wartości na "BRAK"
     def check_empty(value):
         if value is None or value == "" or value != value:  # value != value sprawdza NaN
             return "BRAK"
@@ -29,17 +29,6 @@ def generate_evaluating_metamodel_prompt(model_response, reference_explanation, 
 
     return EVALUATING_METAMODEL_PROMPT.format(model_response=model_response, reference_explanation=reference_explanation, reference_sentiment=reference_sentiment, reference_idioms=reference_idioms)
 
-
-def load_pipe(model, tokenizer):
-    return pipeline(model=model, tokenizer=tokenizer, task='text-generation', return_full_text=False)
-
-def load_model(model_name):
-    return AutoModelForCausalLM.from_pretrained(
-        model_name, torch_dtype=torch.bfloat16,
-        device_map="auto",
-        trust_remote_code=False,
-        revision="main"
-    )
 
 def generate_answers_batch(questions, tokenizer, pipe, llm_params, prompt_ver=1):
     prompts = get_generate_answers_prompts(questions, tokenizer, prompt_ver=prompt_ver)
