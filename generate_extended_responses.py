@@ -33,9 +33,10 @@ def main():
         output_file = "answers_prompt.csv"
 
     for model_name in models:
-        df = ray.get(calculate_for_model.options(num_gpus=num_gpus).remote(model_name, df[:samples_number], llm_params,
-                                                                           prompt_ver=prompt_ver,
-                                                                           batch_size=batch_size))
+        #df = ray.get(calculate_for_model.options(num_gpus=num_gpus).remote(model_name, df[:samples_number], llm_params,
+        #                                                                   prompt_ver=prompt_ver,
+        #                                                                   batch_size=batch_size))
+        df = calculate_for_model(model_name, df[:samples_number], llm_params, prompt_ver=prompt_ver, batch_size=batch_size)
         df.to_csv(output_file)
 
 
