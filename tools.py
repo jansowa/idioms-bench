@@ -63,7 +63,7 @@ def get_prompt_template(q, prompt_ver=1):
 
 def calculate_for_model(model_name, df, llm_params, batch_size=BATCH_SIZE, prompt_ver=1):
     print(f"Przetwarzanie modelu: {model_name}")
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
     with torch.no_grad():
         model = load_model(model_name)
         pipe = load_pipe(model, tokenizer)
