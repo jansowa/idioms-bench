@@ -45,7 +45,7 @@ def generate_answers_batch(questions, tokenizer, pipe, llm_params, prompt_ver=1)
 
 def get_generate_answers_prompts(questions, tokenizer, prompt_ver=1):
     chats = [get_prompt_template(q, prompt_ver=prompt_ver) for q in questions]
-    prompts = [tokenizer.apply_chat_template(chat, tokenize=False) for chat in chats]
+    prompts = [tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=True) for chat in chats]
     return prompts
 
 
@@ -61,10 +61,9 @@ def get_prompt_template(q, prompt_ver=1):
     return template_versions[prompt_ver]
 
 
-@ray.remote(max_calls=1)
 def calculate_for_model(model_name, df, llm_params, batch_size=BATCH_SIZE, prompt_ver=1):
     print(f"Przetwarzanie modelu: {model_name}")
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
     with torch.no_grad():
         model = load_model(model_name)
         pipe = load_pipe(model, tokenizer)
