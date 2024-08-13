@@ -1,33 +1,22 @@
 from model_tools import load_pipe, load_model
-from settings import EVALUATING_METAMODEL_PROMPT
 from transformers import AutoTokenizer
 from prompts import (get_prompt_template_v1, get_prompt_template_v2, get_prompt_template_v3, get_prompt_template_v4,
-                     get_prompt_template_v5, get_prompt_template_v6)
+                     get_prompt_template_v5, get_prompt_template_v6, get_metamodel_prompt)
 import time
 import torch
 import ray
 import json
 
+from string_utils import is_not_blank
 
 BATCH_SIZE = 1
 
 
 def generate_evaluating_metamodel_prompt(model_response, reference_explanation, reference_sentiment, reference_idioms):
-    def check_empty(value):
-        if value is None or value == "" or value != value:  # value != value sprawdza NaN
-            return "BRAK"
-        return value
-
-    model_response = check_empty(model_response)
-    reference_explanation = check_empty(reference_explanation)
-    reference_sentiment = check_empty(reference_sentiment)
-
-    if reference_idioms not in [None, "", "BRAK"] and reference_idioms == reference_idioms:
+    if is_not_blank(reference_idioms):
         reference_idioms = format_idioms(reference_idioms)
-    else:
-        reference_idioms = "BRAK"
 
-    return EVALUATING_METAMODEL_PROMPT.format(model_response=model_response, reference_explanation=reference_explanation, reference_sentiment=reference_sentiment, reference_idioms=reference_idioms)
+    return get_metamodel_prompt(model_response, reference_explanation, reference_sentiment, reference_idioms)
 
 
 def generate_answers_batch(questions, tokenizer, pipe, llm_params, prompt_ver=1):
@@ -87,9 +76,11 @@ def calculate_for_model(model_name, df, llm_params, batch_size=BATCH_SIZE, promp
         print(f"Czas przetwarzania dla modelu {model_name}: {end_time - start_time:.2f} sekund")
         return df
 
+
 def format_idioms(reference_idioms):
     idioms_dict = json.loads(reference_idioms)
     formatted_list = []
     for index, (idiom, definition) in enumerate(idioms_dict.items(), start=1):
         formatted_list.append(f'{index}. "{idiom}" - {definition}')
     return '\n'.join(formatted_list)
+
