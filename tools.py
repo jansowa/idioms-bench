@@ -1,7 +1,7 @@
 from model_tools import load_pipe, load_model
 from transformers import AutoTokenizer
 from prompts import (get_prompt_template_v1, get_prompt_template_v2, get_prompt_template_v3, get_prompt_template_v4,
-                     get_prompt_template_v5, get_prompt_template_v6, get_metamodel_prompt)
+                     get_prompt_template_v5, get_prompt_template_v6, get_metamodel_prompt_v1, get_metamodel_prompt_v2)
 import time
 import torch
 import ray
@@ -12,12 +12,18 @@ from string_utils import is_not_blank
 BATCH_SIZE = 1
 
 
-def generate_evaluating_metamodel_prompt(model_response, reference_explanation, reference_sentiment, reference_idioms):
+def generate_evaluating_metamodel_prompt(model_response, reference_explanation, reference_sentiment, reference_idioms, prompt_ver=1):
     if is_not_blank(reference_idioms):
         reference_idioms = format_idioms(reference_idioms)
 
-    return get_metamodel_prompt(model_response, reference_explanation, reference_sentiment, reference_idioms)
+    return get_metamodel_prompt_template(model_response, reference_explanation, reference_sentiment, reference_idioms, prompt_ver=prompt_ver)
 
+def get_metamodel_prompt_template(model_response, reference_explanation, reference_sentiment, reference_idioms, prompt_ver=1):
+    template_versions = {
+        1: get_metamodel_prompt_v1(model_response, reference_explanation, reference_sentiment, reference_idioms),
+        2: get_metamodel_prompt_v2(model_response, reference_explanation, reference_sentiment, reference_idioms)
+    }
+    return template_versions[prompt_ver]
 
 def generate_answers_batch(questions, tokenizer, pipe, llm_params, prompt_ver=1):
     prompts = get_generate_answers_prompts(questions, tokenizer, prompt_ver=prompt_ver)

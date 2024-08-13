@@ -171,7 +171,7 @@ TWOJE ZADANIE:
 \"\"\"TEKST: {q}"\"\""""}]
 
 
-def get_metamodel_prompt(model_response, reference_explanation, reference_sentiment, reference_idioms):
+def get_metamodel_prompt_v1(model_response, reference_explanation, reference_sentiment, reference_idioms):
     return [
         {
             "role": "user",
@@ -189,8 +189,8 @@ Przykładowa ocena: {"WYDŹWIĘK": "1"}. UWAGA! Jeśli brak nagłówka #REFERENC
 KROK_2: Oceń zgodność WYJAŚNIENIA opisanego w  #ODPOWIEDZ# z  #REFERENCJA-WYJASNIENIE# w skali od 0 do 5, gdzie 0 to odpowiedź zupełnie niezgodna z referencją, a 5 odpowiedź całkowicie zgodna z referencją. Sformatuj tekst {"OCENA": "X"}. Przykład oceny:{"OCENA": "5"}. UWAGA! Jeśli brak nagłówka #REFERENCJA-WYJASNIENIE#, zupełnie pomiń ten punkt! To bardzo ważne!
 
 
-KROK_3: Uwaga, to najtrudniejszy krok! Skup się! Oceń zgodność ZWIĄZKÓW FRAZEOLOGICZNYCH opisanych w  #ODPOWIEDZ# z  #REFERENCJA--ZWIAZKI-FRAZEOLOGICZNE# w skali od 0 do 5, gdzie 0 to odpowiedź zupełnie niezgodna z referencją, a 5 odpowiedź całkowicie zgodna z referencją. Sformatuj tekst: {"ZWIĄZKI": "5"}. Pamiętaj, że w ocenie #ODPOWIEDZ# bierzesz pod uwagę TYLKO i WYŁĄCZNIE związki frazeologiczne, które znajdują się w #REFERENCJA--ZWIAZKI-FRAZEOLOGICZNE#. Musisz zignorować związki frazeologiczne w  #ODPOWIEDZ#, których nie ma w #REFERENCJA--ZWIAZKI-FRAZEOLOGICZNE#. Na podstawie realizacji tego zadania będzie oceniana Twoja praca! 
-UWAGA! Jeśli brak nagłówka #REFERENCJA--ZWIAZKI-FRAZEOLOGICZNE#, zupełnie pomiń ten punkt! To bardzo ważne!
+KROK_3: Uwaga, to najtrudniejszy krok! Skup się! Oceń zgodność ZWIĄZKÓW FRAZEOLOGICZNYCH opisanych w  #ODPOWIEDZ# z  #REFERENCJA-ZWIAZKI-FRAZEOLOGICZNE# w skali od 0 do 5, gdzie 0 to odpowiedź zupełnie niezgodna z referencją, a 5 odpowiedź całkowicie zgodna z referencją. Sformatuj tekst: {"ZWIĄZKI": "5"}. Pamiętaj, że w ocenie #ODPOWIEDZ# bierzesz pod uwagę TYLKO i WYŁĄCZNIE związki frazeologiczne, które znajdują się w #REFERENCJA-ZWIAZKI-FRAZEOLOGICZNE#. Musisz zignorować związki frazeologiczne w  #ODPOWIEDZ#, których nie ma w #REFERENCJA-ZWIAZKI-FRAZEOLOGICZNE#. Na podstawie realizacji tego zadania będzie oceniana Twoja praca! 
+UWAGA! Jeśli brak nagłówka #REFERENCJA-ZWIAZKI-FRAZEOLOGICZNE#, zupełnie pomiń ten punkt! To bardzo ważne!
 
 Podaj rezultat każdego kroku w nowej linii.
 
@@ -246,6 +246,80 @@ PRZYKŁAD_1:
         }
     ]
 
+def get_metamodel_prompt_v2(model_response, reference_explanation, reference_sentiment, reference_idioms):
+    return [
+        {
+            "role": "user",
+            "content": """ROLA: \"\"\"Jesteś rzetelnym asystentem oceniającym. ZAWSZE ściśle trzymasz się instrukcji. Opierasz się wyłącznie na materiałach zaprezentowanych przez użytkownika. Wykonujesz TYLKO swoje ZADANIE, pomijasz dodatkowe komentarze.\"\"\"
+
+ZADANIE: \"\"\"Twoje zadanie polega wyłącznie na dostarczeniu obiektywnej OCENY opartej na porównaniu treści #ODPOWIEDZ# z 
+treścią REFERENCJI pod nagłówkami rozpoczynającymi się od "#REFERENCJA-". 
+REFERENCJA jest jedynym źródłem prawdy. 
+
+Aby dokonać OCENY, wykonaj następujące kroki:
+
+KROK_1: Oceń zgodność WYDŹWIĘKU opisanego w #ODPOWIEDZ#  z #REFERENCJA-WYDZWIEK# w skali od 0 do 5, gdzie 0 to odpowiedź zupełnie niezgodna z referencją, a 5 odpowiedź całkowicie zgodna z referencją. Sformatuj tekst: {"WYDŹWIĘK": "X"},
+Przykładowa ocena: {"WYDŹWIĘK": "1"}. UWAGA! Jeśli brak nagłówka #REFERENCJA-WYDZWIEK#, zupełnie pomiń ten punkt! To bardzo ważne! 
+
+KROK_2: Oceń zgodność WYJAŚNIENIA opisanego w  #ODPOWIEDZ# z  #REFERENCJA-WYJASNIENIE# w skali od 0 do 5, gdzie 0 to odpowiedź zupełnie niezgodna z referencją, a 5 odpowiedź całkowicie zgodna z referencją. Sformatuj tekst {"OCENA": "X"}. Przykład oceny:{"OCENA": "5"}. UWAGA! Jeśli brak nagłówka #REFERENCJA-WYJASNIENIE#, zupełnie pomiń ten punkt! To bardzo ważne!
+
+
+KROK_3: Uwaga, to najtrudniejszy krok! Skup się! Oceń zgodność ZWIĄZKÓW FRAZEOLOGICZNYCH opisanych w  #ODPOWIEDZ# z  #REFERENCJA-ZWIAZKI-FRAZEOLOGICZNE# w skali od 0 do 5, gdzie 0 to odpowiedź zupełnie niezgodna z referencją, a 5 odpowiedź całkowicie zgodna z referencją. Sformatuj tekst: {"ZWIĄZKI": "5"}. Pamiętaj, że powinieneś obniżać ocenę, jeśli frazy z #ODPOWIEDZ# nie znajdują się w #REFERENCJA-ZWIAZKI-FRAZEOLOGICZNE#. Jeśli tekst w ogóle nie zawiera #REFERENCJA-ZWIAZKI-FRAZEOLOGICZNE#, to #ODPOWIEDZ# powinna zawierać informację o braku związków frazeologicznych. Na podstawie realizacji tego zadania będzie oceniana Twoja praca! 
+
+Podaj rezultat każdego kroku w nowej linii.
+
+Pamiętaj, że wykonujesz TYLKO swoje ZADANIE, pomijasz dodatkowe komentarze.\"\"\"
+
+PRZYKŁADY:
+
+PRZYKŁAD_1: 
+
+#ODPOWIEDZ#
+\"\"\"1. Wydźwięk: NEGATYWNY
+2. Wyjaśnienie: Autorka wypowiedzi jest sceptycznie nastawiona wobec umiejętności aktora, sugerując, że nie potrzebuje scenariusza, ponieważ ma "taki talent". Wyraża to nieufność wobec umiejętności aktora i sugeruje, że jego występ jest zbyt prosty i nie wymaga przygotowań.
+3. Związki frazeologiczne: "przewidzieć każdą reakcję": "przewidzieć każdy krok, każdą sytuację", "scenariusz": "plan, opis sytuacji, w którym występują postacie, ich rozmowy, akcja, itp.\"\"\"
+
+#REFERENCJA-WYDZWIEK#
+\"\"\"Negatywny\"\"\"
+
+#REFERENCJA-WYJASNIENIE#
+\"\"\"Związek frazeologiczny "włożyć między bajki" oznacza uznanie czegoś za nieprawdziwe. W tym przypadku dotyczy określenia, że "bielik jest super", więc finalnie jest to negatywna opinia.\"\"\"
+
+#REFERENCJA-ZWIAZKI-FRAZEOLOGICZNE#
+\"\"\"1. "włóżyć między bajki": "uznać, że coś jest nieprawdziwe\"\"\""""
+        },
+        {
+            "role": "assistant",
+            "content": """\"\"\"{"WYDŹWIĘK": "5"}
+{"OCENA": "5"}
+{"ZWIĄZKI": "0"}\"\"\""""
+        },
+        {
+            "role": "user",
+            "content": """PRZYKŁAD 2:
+
+#ODPOWIEDZ#
+\"\"\"ODPOWIEDŹ:
+1. Wydźwięk: POZYTYWNY
+2. Wyjaśnienie: Pytanie ""Czy masz zegarek?"" jest neutralne, ale w kontekście rozmowy może wskazywać na to, że rozmówca jest zainteresowany kupnem zegarka, co sugeruje, że autor wypowiedzi jest gościńcem, który może zaoferować coś ciekawego.
+3. Brak związków frazeologicznych\"\"\"
+
+#REFERENCJA-WYJASNIENIE#
+\"\"\"Nie mamy pewności, jednak możemy podejrzewać, że autor wypowiedzi nie pyta o posiadanie zegarka, tylko chciałby się dowiedzieć, która jest godzina.\"\"\""""
+        },
+        {
+            "role": "assistant",
+            "content": """\"\"\"{"OCENA": "1"}
+{"ZWIĄZKI": "5"}\"\"\""""
+        },
+        {
+            "role": "user",
+            "content": f"""TWOJE DANE DO OCENY:
+
+#ODPOWIEDZ#
+\"\"\"{model_response}\"\"\"\"{get_reference_sentiment(reference_sentiment)}{get_reference_explanation(reference_explanation)}{get_reference_idioms(reference_idioms)}"""
+        }
+    ]
 
 def get_reference_idioms(reference_idioms) -> str:
     if is_not_blank(reference_idioms):
