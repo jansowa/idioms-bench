@@ -3,16 +3,10 @@ from tools import generate_evaluating_metamodel_prompt
 import argparse
 import json
 import os
+import glob
 
-def main():
-    parser = argparse.ArgumentParser(description="Script that generates evaluations for the benchmark.")
-    parser.add_argument('--input_file', type=str, help='path of input file')
-    parser.add_argument("--metamodel_prompt_ver", type=int, default=3, help="Version of metamodel prompt")
-    parser.add_argument("--metamodel_name", type=str, default="gpt-4o", help="Version of the metamodel")
-    parser.add_argument("--google_sheet_url", type=str, help="URL with google sheet containing original data")
-
-    args = parser.parse_args()
-    df_generated = pd.read_csv(args.input_file)
+def process_file(input_file, args, output_directory):
+    df_generated = pd.read_csv(input_file)
     answer_column = next((col for col in df_generated.columns if col.startswith('answer_')), None)
     sheet_url = args.google_sheet_url
 
@@ -36,8 +30,8 @@ def main():
         axis=1
     )
 
-    model_name = os.path.splitext(os.path.basename(args.input_file))[0]
-    filename = f"data/batch_files/{model_name}.jsonl"
+    model_name = os.path.splitext(os.path.basename(input_file))[0]
+    filename = os.path.join(output_directory, f"{model_name}.jsonl")
     # Otwieramy plik do zapisu
     with open(filename, 'w', encoding='utf-8') as f:
         # Iterujemy przez każdy wiersz w kolumnie
@@ -59,8 +53,27 @@ def main():
             json.dump(data, f, ensure_ascii=False)
             f.write('\n')
 
-    print("The JSONL were created.")
+    print(f"The JSONL file was created for {input_file}.")
 
+def main():
+    parser = argparse.ArgumentParser(description="Script that generates evaluations for the benchmark.")
+    parser.add_argument('--input_file', type=str, help='path of input file')
+    parser.add_argument('--input_directory', type=str, help='path of input directory containing CSV files')
+    parser.add_argument("--metamodel_prompt_ver", type=int, default=3, help="Version of metamodel prompt")
+    parser.add_argument("--metamodel_name", type=str, default="gpt-4o", help="Version of the metamodel")
+    parser.add_argument("--google_sheet_url", type=str, help="URL with google sheet containing original data")
+    parser.add_argument("--output_directory", type=str, default="data/batch_files")
+
+    args = parser.parse_args()
+
+    if args.input_file:
+        process_file(args.input_file, args, args.output_directory)
+    elif args.input_directory:
+        csv_files = glob.glob(os.path.join(args.input_directory, '*.csv'))
+        for csv_file in csv_files:
+            process_file(csv_file, args, args.output_directory)
+    else:
+        print("Error: Please provide either --input_file or --input_directory")
 
 if __name__ == "__main__":
     main()
